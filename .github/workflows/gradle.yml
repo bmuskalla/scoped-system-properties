@@ -6,12 +6,16 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        java: [ '1.8', '1.9', '10', '11', '12', '13' ]
+    name: Java ${{ matrix.java }}
     steps:
     - uses: actions/checkout@v1
-    - name: Set up JDK 1.8
+    - name: Set up JDK
       uses: actions/setup-java@v1
       with:
-        java-version: 1.8
+        java-version: ${{ matrix.java }}
+        architecture: x64
     - name: Build with Gradle
       run: ./gradlew build
