@@ -21,11 +21,10 @@ import static java.util.stream.Collectors.toList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import com.google.common.collect.Sets;
 
 public class DelegatingProperties extends Properties {
 
@@ -67,7 +66,10 @@ public class DelegatingProperties extends Properties {
 
 	@Override
 	public Set<Object> keySet() {
-		return Sets.union(overrides().keySet(), baseline.keySet());
+		Set<Object> keyset = new HashSet<Object>();
+		keyset.addAll(overrides().keySet());
+		keyset.addAll(baseline.keySet());
+		return keyset;
 	}
 
 	@Override

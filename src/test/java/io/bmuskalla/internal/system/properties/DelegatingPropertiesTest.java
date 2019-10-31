@@ -33,8 +33,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
-import com.google.common.collect.MoreCollectors;
-
 import io.bmuskalla.system.properties.PropertiesMethodProvider;
 
 public class DelegatingPropertiesTest {
@@ -185,10 +183,11 @@ public class DelegatingPropertiesTest {
 		worksAsIs.addAll(objectMethods());
 		worksAsIs.add("store");
 		if (!worksAsIs.contains(method.getName())) {
-			Arrays.stream(DelegatingProperties.class.getDeclaredMethods())
+			List<Method> methodImplementations = Arrays.stream(DelegatingProperties.class.getDeclaredMethods())
 					.filter(m -> m.getName().equals(method.getName()))
 					.filter(m -> Arrays.equals(m.getParameterTypes(), method.getParameterTypes()))
-					.collect(MoreCollectors.onlyElement());
+					.collect(Collectors.toList());
+			assertThat(methodImplementations).as("no impl found").hasSize(1);
 		}
 	}
 
