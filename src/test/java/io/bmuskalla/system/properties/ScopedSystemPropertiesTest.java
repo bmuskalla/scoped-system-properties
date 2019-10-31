@@ -25,26 +25,35 @@ class ScopedSystemPropertiesTest {
 	void otherThreadDoesNotSeeScopedValue() throws Exception {
 		CountDownLatch setupLatch = new CountDownLatch(1);
 		CountDownLatch assertionLatch = new CountDownLatch(1);
-		Thread.currentThread().setName("test thread");
+		new Thread(() -> {
+			try {
+				setupLatch.await(1, TimeUnit.MINUTES);
+			} catch (InterruptedException e) {
+				throw new AssertionError(e);
+			}
+			assertThatSystemPropertyHasValue("scopedKey", null);
+			assertionLatch.countDown();
+		}, "outside scope").start();
 		try (SystemPropertyScope scope = ScopedSystemProperties.scoped()) {
 			scope.setProperty("scopedKey", "scopedValue");
 			setupLatch.countDown();
 			assertThatSystemPropertyHasValue("scopedKey", "scopedValue");
-			new Thread(() -> {
-				try {
-					setupLatch.await(1, TimeUnit.MINUTES);
-				} catch (InterruptedException e) {
-					throw new AssertionError(e);
-				}
-				assertThatSystemPropertyHasValue("scopedKey", null);
-				assertionLatch.countDown();
-			}, "outside scope").start();
 		}
 		assertionLatch.await(1, TimeUnit.MINUTES);
 
 		assertThatSystemPropertyHasValue("scopedKey", null);
 	}
 
+	@Test
+	void booleanMethodUsesScopedValue() {
+		try (SystemPropertyScope scope = ScopedSystemProperties.scoped()) {
+			scope.setProperty("scopedKey", "true");
+			assertThat(Boolean.getBoolean("scopedKey")).isTrue();
+		}
+		assertThatSystemPropertyHasValue("scopedKey", null);
+	}
+
+	
 	private void assertThatSystemPropertyHasValue(String key, String value) {
 		assertThat(System.getProperty(key)).isEqualTo(value);
 	}

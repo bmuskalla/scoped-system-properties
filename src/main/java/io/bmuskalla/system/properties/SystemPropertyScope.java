@@ -14,7 +14,7 @@ class SystemPropertyScope implements AutoCloseable {
     }
 
     public void setProperty(String key, String value) {
-        propertyStore.addOverride(key, value);
+        propertyStore.setScopedProperty(key, value);
     }
 
     @Override
