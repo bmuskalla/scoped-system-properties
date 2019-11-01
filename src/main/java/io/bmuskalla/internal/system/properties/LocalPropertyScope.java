@@ -14,30 +14,32 @@
  * the License.
  ******************************************************************************/
 
-package io.bmuskalla.system.properties;
+package io.bmuskalla.internal.system.properties;
 
 import java.util.Properties;
 
-import io.bmuskalla.internal.system.properties.DelegatingProperties;
+import io.bmuskalla.system.properties.PropertyScope;
 
-class SystemPropertyScope implements AutoCloseable {
+public class LocalPropertyScope implements PropertyScope {
 
-    private DelegatingProperties propertyStore;
-    private final Properties originalProperties;
+	private DelegatingProperties propertyStore;
 
-    SystemPropertyScope() {
-        originalProperties = System.getProperties();
-        propertyStore = new DelegatingProperties(originalProperties);
-        System.setProperties(propertyStore);
-    }
+	private final Properties originalProperties;
 
-    public void setProperty(String key, String value) {
-        propertyStore.setProperty(key, value);
-    }
+	public LocalPropertyScope() {
+		originalProperties = System.getProperties();
+		propertyStore = new DelegatingProperties(originalProperties);
+		System.setProperties(propertyStore);
+	}
 
-    @Override
-    public void close() {
-        System.setProperties(originalProperties);
-    }
+	@Override
+	public void setProperty(String key, String value) {
+		propertyStore.setProperty(key, value);
+	}
+
+	@Override
+	public void close() {
+		System.setProperties(originalProperties);
+	}
 
 }

@@ -1,5 +1,3 @@
-@file:Suppress("SpellCheckingInspection")
-
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
@@ -18,10 +16,15 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.14.0")
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 val test by tasks.getting(Test::class) {
     useJUnitPlatform()
     testLogging {
-        events(TestLogEvent.PASSED, TestLogEvent.FAILED, TestLogEvent.SKIPPED)
-        showStandardStreams = true
+        showExceptions = true
+        showStackTraces	= true
     }
 }

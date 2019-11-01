@@ -17,11 +17,13 @@
 package io.bmuskalla.internal.system.properties;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -84,6 +86,16 @@ public class DelegatingProperties extends Properties {
 		return Stream.concat(overrideValues, baselineValuesWithoutOverrides(baselineKeys)).collect(toList());
 	}
 
+	@Override
+	public Set<Map.Entry<Object, Object>> entrySet() {
+		Stream<Map.Entry<Object, Object>> overrideValues = overrides().entrySet().stream();
+		return Stream.concat(overrideValues, baselineEntriesWithoutOverrides()).collect(toSet());
+	}
+	
+	private Stream<Map.Entry<Object, Object>> baselineEntriesWithoutOverrides() {
+		return baseline.entrySet().stream().filter(e -> !overrides().keySet().contains(e.getKey()));
+	}
+	
 	private Stream<Object> baselineValuesWithoutOverrides(Set<Object> baselineKeys) {
 		return baselineKeys.stream().filter(k -> !overrides().keySet().contains(k)).map(k -> get(k));
 	}
