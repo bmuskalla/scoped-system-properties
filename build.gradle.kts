@@ -1,7 +1,11 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
+version = "0.1.0"
+group = "io.bmuskalla"
+
 plugins {
     `java-library`
+    `maven-publish`
 }
 
 repositories {
@@ -26,5 +30,23 @@ val test by tasks.getting(Test::class) {
     testLogging {
         showExceptions = true
         showStackTraces	= true
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/bmuskalla/scoped-system-properties")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("GPR_USER")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("GPR_API_KEY")
+            }
+        }
+    }
+    publications {
+        register("gpr",  MavenPublication::class) {
+            from(components["java"])
+        }
     }
 }
