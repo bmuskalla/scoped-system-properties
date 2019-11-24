@@ -1,6 +1,6 @@
 allprojects {
-    version = "0.1.0"
-    group = "io.bmuskalla"
+    version = "0.5.0"
+    group = "io.github.bmuskalla"
 
     repositories {
         jcenter()
@@ -16,16 +16,17 @@ allprojects {
     configure<PublishingExtension> {
         repositories {
             maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/bmuskalla/scoped-system-properties")
+                name = "sonatype"
+                url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2")
                 credentials {
-                    username = project.findProperty("gpr.user") as String? ?: System.getenv("GPR_USER")
-                    password = project.findProperty("gpr.key") as String? ?: System.getenv("GPR_API_KEY")
+                    username = project.findProperty("sonatype.user") as String
+                    password = project.findProperty("sonatype.password") as String
                 }
+
             }
         }
     }
-    
+
     val test by tasks.getting(Test::class) {
         useJUnitPlatform()
         testLogging {
