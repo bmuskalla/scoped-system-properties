@@ -1,5 +1,7 @@
 # Scoped System Properties
 
+[![Build](https://github.com/bmuskalla/scoped-system-properties/workflows/build/badge.svg)](https://github.com/bmuskalla/scoped-system-properties/actions)
+
 ## tldr;
 
 Easy to use, lock-free, thread-safe scoped system properties to isolate changes to global state.
