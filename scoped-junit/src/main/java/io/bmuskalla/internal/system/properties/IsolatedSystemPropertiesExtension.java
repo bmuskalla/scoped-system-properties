@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 
+import io.bmuskalla.system.properties.PropertyEnvironment;
 import io.bmuskalla.system.properties.ScopedSystemProperties;
 
 public class IsolatedSystemPropertiesExtension implements Extension, BeforeEachCallback {
@@ -15,10 +16,10 @@ public class IsolatedSystemPropertiesExtension implements Extension, BeforeEachC
 
 	@Override
 	public void beforeEach(ExtensionContext context) throws Exception {
-		LocalPropertyScope scope = ScopedSystemProperties.localScope();
+		PropertyEnvironment environment = ScopedSystemProperties.newPropertyEnvironment();
 
-		CloseableResource closableScope = wrapAsClosableResource(() -> scope.close());
-		getStore(context).put(SCOPE_KEY, closableScope);
+		CloseableResource closableEnvironment = wrapAsClosableResource(() -> environment.close());
+		getStore(context).put(SCOPE_KEY, closableEnvironment);
 	}
 
 	private CloseableResource wrapAsClosableResource(Runnable closingStatement) {

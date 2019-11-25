@@ -50,3 +50,7 @@ publishing {
         }
     }
 }
+
+signing {
+    sign(publishing.publications["sonatype"])
+}

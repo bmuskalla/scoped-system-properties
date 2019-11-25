@@ -23,14 +23,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 
-import io.bmuskalla.internal.system.properties.LocalPropertyScope;
-
 class ScopedSystemPropertiesTest {
 
 	@Test
 	void onlySeesScopedValueWithinScope() {
-		try (LocalPropertyScope scope = ScopedSystemProperties.localScope()) {
-			scope.setProperty("scopedKey", "scopedValue");
+		try (PropertyEnvironment env = ScopedSystemProperties.newPropertyEnvironment()) {
+			env.setProperty("scopedKey", "scopedValue");
 			assertThatSystemPropertyHasValue("scopedKey", "scopedValue");
 		}
 		assertThatSystemPropertyHasValue("scopedKey", null);
@@ -49,8 +47,8 @@ class ScopedSystemPropertiesTest {
 			assertThatSystemPropertyHasValue("scopedKey", null);
 			assertionLatch.countDown();
 		}, "outside scope").start();
-		try (LocalPropertyScope scope = ScopedSystemProperties.localScope()) {
-			scope.setProperty("scopedKey", "scopedValue");
+		try (PropertyEnvironment env = ScopedSystemProperties.newPropertyEnvironment()) {
+			env.setProperty("scopedKey", "scopedValue");
 			setupLatch.countDown();
 			assertThatSystemPropertyHasValue("scopedKey", "scopedValue");
 		}
@@ -61,8 +59,8 @@ class ScopedSystemPropertiesTest {
 
 	@Test
 	void booleanMethodUsesScopedValue() {
-		try (LocalPropertyScope scope = ScopedSystemProperties.localScope()) {
-			scope.setProperty("scopedKey", "true");
+		try (PropertyEnvironment env = ScopedSystemProperties.newPropertyEnvironment()) {
+			env.setProperty("scopedKey", "true");
 			assertThat(Boolean.getBoolean("scopedKey")).isTrue();
 		}
 		assertThatSystemPropertyHasValue("scopedKey", null);

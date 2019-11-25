@@ -16,29 +16,28 @@
 
 package io.bmuskalla.system.properties;
 
-import io.bmuskalla.internal.system.properties.LocalPropertyScope;
-
 /**
  * Provides a way to work with system properties without changing global state.
  */
 public class ScopedSystemProperties {
 
 	/**
-	 * Returns a {@link PropertyScope} that is bound to the current thread.
+	 * Returns a {@link PropertyEnvironment} that manages system properties.
 	 * <p>
 	 * Any changes to system properties are only visible within the thread that
-	 * opened the scope. A scope should be closed after usage to restore the regular
-	 * behavior of system properties within the thread.
+	 * opened the environment or newly created threads while the environment is
+	 * active. An environment should be closed after usage to restore the regular
+	 * behavior of system properties.
 	 * </p>
 	 * <p>
-	 * Changes to system properties within the scope/thread are not visible to other
-	 * scopes/threads.
+	 * Changes to system properties within while the environment is active are not
+	 * visible to other environments or threads created prior.
 	 * </p>
 	 * 
-	 * @return a thread-local {@link PropertyScope}
+	 * @return a new {@link PropertyEnvironment}
 	 */
-	public static LocalPropertyScope localScope() {
-		return new LocalPropertyScope();
+	public static PropertyEnvironment newPropertyEnvironment() {
+		return new PropertyEnvironment();
 	}
 
 	private ScopedSystemProperties() {

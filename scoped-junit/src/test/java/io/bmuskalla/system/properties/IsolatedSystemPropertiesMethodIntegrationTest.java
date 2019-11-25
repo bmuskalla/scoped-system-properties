@@ -22,7 +22,8 @@ public class IsolatedSystemPropertiesMethodIntegrationTest {
 	@IsolatedSystemProperties
 	void setsValueInTest() throws Exception {
 		assertEquals("before", System.getProperty("key"));
-		System.setProperty("key", "other");
+		System.setProperty("key", "inTest");
+		assertEquals("inTest", System.getProperty("key"));
 	}
 	
 	@AfterAll

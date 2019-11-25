@@ -27,6 +27,8 @@ allprojects {
         }
     }
 
+    apply(plugin = "signing")    
+
     val test by tasks.getting(Test::class) {
         useJUnitPlatform()
         testLogging {

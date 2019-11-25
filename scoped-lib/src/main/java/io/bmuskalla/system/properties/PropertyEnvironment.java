@@ -14,25 +14,48 @@
  * the License.
  ******************************************************************************/
 
-package io.bmuskalla.internal.system.properties;
+package io.bmuskalla.system.properties;
 
 import java.util.Properties;
 
-import io.bmuskalla.system.properties.PropertyScope;
+import io.bmuskalla.internal.system.properties.DelegatingProperties;
 
-public class LocalPropertyScope implements PropertyScope {
+/**
+ * The environment represents a limited lifecycle and lifetime for system
+ * properties.
+ * <p>
+ * Once an environment is acquired, all system property calls will be handled by
+ * the active environment. Changes to system properties will only be visible by
+ * the thread holding the environment or any new threads started by it.
+ * </p>
+ */
+public class PropertyEnvironment implements AutoCloseable {
 
 	private DelegatingProperties propertyStore;
 
 	private final Properties originalProperties;
 
-	public LocalPropertyScope() {
+	public PropertyEnvironment() {
 		originalProperties = System.getProperties();
 		propertyStore = new DelegatingProperties(originalProperties);
 		System.setProperties(propertyStore);
 	}
 
-	@Override
+	/**
+	 * Sets the system property indicated by the specified key.
+	 *
+	 * The given value is only available to callers with access to this environment.
+	 * See the documentation for {@link PropertyEnvironment} for more details.
+	 * 
+	 * This method is just a convince method to help making the intention clear that
+	 * the value for the system property is scoped. The same effect can be achieved
+	 * by calling <code>System#setProperty(String, String)</code> while a
+	 * {@link PropertyEnvironment} is active.
+	 * 
+	 * @param key   the name of the system property.
+	 * @param value the value of the system property.
+	 * @see System#setProperty(String, String)
+	 */
 	public void setProperty(String key, String value) {
 		propertyStore.setProperty(key, value);
 	}
