@@ -19,8 +19,8 @@ allprojects {
                 name = "sonatype"
                 url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2")
                 credentials {
-                    username = project.findProperty("sonatype.user") as String
-                    password = project.findProperty("sonatype.password") as String
+                    username = project.findProperty("sonatype.user") as String? ?: System.getenv("sonatype.user")
+                    password = project.findProperty("sonatype.password") as String? ?: System.getenv("sonatype.password")
                 }
 
             }
