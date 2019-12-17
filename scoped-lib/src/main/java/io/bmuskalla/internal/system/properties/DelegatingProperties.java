@@ -23,6 +23,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.InvalidPropertiesFormatException;
@@ -131,6 +132,12 @@ public class DelegatingProperties extends Properties {
 	@Override
 	public void storeToXML(OutputStream os, String comment, String encoding) throws IOException {
 		environmentProperties.get().storeToXML(os, comment, encoding);
+	}
+
+	// only @since Java 10
+	// no @Override to stay backwards compatible 
+	public void storeToXML(OutputStream os, String comment, Charset charset) throws IOException {
+		storeToXML(os, comment, charset.name());
 	}
 
 	public void load(Reader reader) throws IOException {

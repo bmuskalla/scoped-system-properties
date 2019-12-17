@@ -85,7 +85,8 @@ public class DelegatingPropertiesTest {
 		properties.store(stream, "comments");
 
 		assertThat(stream.toString()).startsWith("#comment");
-		assertThat(stream.toString()).endsWith("key=x\nscopedKey=y\n");
+		assertThat(stream.toString()).contains("key=x\n");
+		assertThat(stream.toString()).contains("scopedKey=y\n");
 	}
 
 	@Test
@@ -180,7 +181,7 @@ public class DelegatingPropertiesTest {
 				.filter(m -> m.getName().equals(method.getName()))
 				.filter(m -> Arrays.equals(m.getParameterTypes(), method.getParameterTypes()))
 				.collect(Collectors.toList());
-		assertThat(methodImplementations).as("missing delegate").hasSize(1);
+		assertThat(methodImplementations).as("missing delegate: " + testDisplayName).hasSize(1);
 	}
 
 	private DelegatingProperties propertiesWithRegularAndScopedKey(String regularKey, String scopedKey) {
