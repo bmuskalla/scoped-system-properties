@@ -19,12 +19,12 @@ This library helps to deal with those 3rd party dependencies that require the us
 ### Gradle
 *Groovy*
 ```groovy
-implementation 'io.github.bmuskalla:scoped-system-properties:1.0.0'
+implementation 'io.github.bmuskalla:scoped-system-properties:1.1.0'
 ```
 
 *Kotlin*
 ```kotlin
-implementation("io.github.bmuskalla:scoped-system-properties:1.0.0")
+implementation("io.github.bmuskalla:scoped-system-properties:1.1.0")
 ```
 
 ### Maven
@@ -32,7 +32,7 @@ implementation("io.github.bmuskalla:scoped-system-properties:1.0.0")
 <dependency>
     <groupId>io.github.bmuskalla</groupId>
     <artifactId>scoped-system-properties</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -57,12 +57,12 @@ System.getProperty("someKey") // = "global value"
 ### Gradle
 *Groovy*
 ```groovy
-implementation 'io.github.bmuskalla:scoped-system-properties-junit:1.0.0'
+implementation 'io.github.bmuskalla:scoped-system-properties-junit:1.1.0'
 ```
 
 *Kotlin*
 ```kotlin
-implementation("io.github.bmuskalla:scoped-system-properties-junit:1.0.0")
+implementation("io.github.bmuskalla:scoped-system-properties-junit:1.1.0")
 ```
 
 ### Maven
@@ -70,7 +70,7 @@ implementation("io.github.bmuskalla:scoped-system-properties-junit:1.0.0")
 <dependency>
     <groupId>io.github.bmuskalla</groupId>
     <artifactId>scoped-system-properties-junit</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -103,6 +103,11 @@ static void tearDown() {
 Proper isolation can be achieved by leveraging a global lock using JUnits [@ResourceLock](https://junit.org/junit5/docs/current/api/org/junit/jupiter/api/parallel/ResourceLock.html) (see [Synchronization when running Parallel Tests](https://junit.org/junit5/docs/current/user-guide/#writing-tests-parallel-execution-synchronization)). While this has the same effect of avoiding race conditions on the system properties, such tests cannot be run in parallel if they require mutating access to system properties.
 
 # Changelog
+
+## 1.1.0
+* Avoid global changes to affect the isolated environment
+* Support all Properties API
+* Simplified delegation
 
 ## 1.0.0 Reworked API
 * Favor `PropertyEnvironment` as concept
