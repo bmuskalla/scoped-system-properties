@@ -17,6 +17,7 @@
 package io.bmuskalla.system.properties;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Properties;
@@ -31,7 +32,7 @@ public class PropertiesMethodProvider implements ArgumentsProvider {
 
 	@Override
 	public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
-		return Arrays.stream(Properties.class.getMethods()).map(m -> Arguments.of(m, toName(m)));
+		return Arrays.stream(Properties.class.getMethods()).filter(m -> !Modifier.isFinal(m.getModifiers())).map(m -> Arguments.of(m, toName(m)));
 	}
 
 	private String toName(Method method) {

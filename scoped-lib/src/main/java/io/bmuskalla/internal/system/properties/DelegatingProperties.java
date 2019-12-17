@@ -16,17 +16,22 @@
 
 package io.bmuskalla.internal.system.properties;
 
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
-
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashSet;
+import java.util.InvalidPropertiesFormatException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Stream;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class DelegatingProperties extends Properties {
 
@@ -34,98 +39,221 @@ public class DelegatingProperties extends Properties {
 
 	private Properties baseline;
 
-	private final ThreadLocal<Properties> overrides = new ThreadLocal<Properties>() {
+	private final ThreadLocal<Properties> environmentProperties = new ThreadLocal<Properties>() {
 		protected Properties initialValue() {
 			return baseline;
 		};
 	};
 
 	public DelegatingProperties(Properties baseline) {
-		overrides.set(new Properties(baseline));
+		Properties newEnvironment = buildNewEnvironment(baseline);
+		this.environmentProperties.set(newEnvironment);
 		this.baseline = baseline;
 	}
 
-	@Override
-	public Object get(Object key) {
-		Object overridenValue = overrides().get(key);
-		return overridenValue != null ? overridenValue : baseline.get(key);
+	private Properties buildNewEnvironment(Properties baseline) {
+		Properties frozenBaseline = (Properties) baseline.clone();
+		Properties newEnvironment = new Properties();
+		frozenBaseline.stringPropertyNames().forEach(k -> newEnvironment.setProperty(k, frozenBaseline.getProperty(k)));
+		return newEnvironment;
 	}
 
 	@Override
-	public String getProperty(String key) {
-		return overrides().getProperty(key);
+	public synchronized Object get(Object key) {
+		return environmentProperties.get().get(key);
 	}
 
 	@Override
 	public Enumeration<?> propertyNames() {
-		return overrides().propertyNames();
+		return environmentProperties.get().propertyNames();
 	}
 
 	@Override
-	public Set<String> stringPropertyNames() {
-		return overrides().stringPropertyNames();
-	}
-
-	@Override
-	public Set<Object> keySet() {
-		Set<Object> keyset = new HashSet<Object>();
-		keyset.addAll(overrides().keySet());
-		keyset.addAll(baseline.keySet());
-		return keyset;
-	}
-
-	@Override
-	public synchronized Enumeration<Object> keys() {
-		return Collections.enumeration(keySet());
-	}
-
-	@Override
-	public Collection<Object> values() {
-		Set<Object> baselineKeys = baseline.keySet();
-		Stream<Object> overrideValues = overrides().values().stream();
-		return Stream.concat(overrideValues, baselineValuesWithoutOverrides(baselineKeys)).collect(toList());
-	}
-
-	@Override
-	public Set<Map.Entry<Object, Object>> entrySet() {
-		Stream<Map.Entry<Object, Object>> overrideValues = overrides().entrySet().stream();
-		return Stream.concat(overrideValues, baselineEntriesWithoutOverrides()).collect(toSet());
-	}
-	
-	private Stream<Map.Entry<Object, Object>> baselineEntriesWithoutOverrides() {
-		return baseline.entrySet().stream().filter(e -> !overrides().keySet().contains(e.getKey()));
-	}
-	
-	private Stream<Object> baselineValuesWithoutOverrides(Set<Object> baselineKeys) {
-		return baselineKeys.stream().filter(k -> !overrides().keySet().contains(k)).map(k -> get(k));
-	}
-
-	@Override
-	public synchronized Object remove(Object key) {
-		return overrides().remove(key);
-	}
-
-	@Override
-	public synchronized boolean containsKey(Object key) {
-		return overrides().containsKey(key) || baseline.containsKey(key);
-	}
-
-	@Override
-	public synchronized boolean contains(Object value) {
-		return overrides().containsKey(value) || baseline.containsKey(value);
+	public synchronized Object put(Object key, Object value) {
+		return environmentProperties.get().put(key, value);
 	}
 
 	@Override
 	public synchronized Object setProperty(String key, String value) {
-		Object previousValue = overrides().setProperty(key, value);
-		if(previousValue == null) {
-			return baseline.get(key);
-		}
-		return previousValue;
+		return environmentProperties.get().setProperty(key, value);
 	}
-	
-	private Properties overrides() {
-		return overrides.get();
+
+	@Override
+	public String getProperty(String key, String defaultValue) {
+		return environmentProperties.get().getProperty(key, defaultValue);
+	}
+
+	@Override
+	public synchronized boolean contains(Object value) {
+		return environmentProperties.get().contains(value);
+	}
+
+	@Override
+	public synchronized boolean containsKey(Object key) {
+		return environmentProperties.get().containsKey(key);
+	}
+
+	@Override
+	public boolean containsValue(Object value) {
+		return environmentProperties.get().containsValue(value);
+	}
+
+	@Override
+	public Collection<Object> values() {
+		return environmentProperties.get().values();
+	}
+
+	@Override
+	public synchronized Enumeration<Object> keys() {
+		return environmentProperties.get().keys();
+	}
+
+	@Override
+	public Set<Object> keySet() {
+		return environmentProperties.get().keySet();
+	}
+
+	@Override
+	public void store(OutputStream out, String comments) throws IOException {
+		environmentProperties.get().store(out, comments);
+	}
+
+	@Override
+	public void store(Writer writer, String comments) throws IOException {
+		environmentProperties.get().store(writer, comments);
+	}
+
+	@Override
+	public void storeToXML(OutputStream os, String comment) throws IOException {
+		environmentProperties.get().storeToXML(os, comment);
+	}
+
+	@Override
+	public void storeToXML(OutputStream os, String comment, String encoding) throws IOException {
+		environmentProperties.get().storeToXML(os, comment, encoding);
+	}
+
+	public void load(Reader reader) throws IOException {
+		environmentProperties.get().load(reader);
+	}
+
+	public int size() {
+		return environmentProperties.get().size();
+	}
+
+	public boolean isEmpty() {
+		return environmentProperties.get().isEmpty();
+	}
+
+	public Enumeration<Object> elements() {
+		return environmentProperties.get().elements();
+	}
+
+	public void load(InputStream inStream) throws IOException {
+		environmentProperties.get().load(inStream);
+	}
+
+	public Object remove(Object key) {
+		return environmentProperties.get().remove(key);
+	}
+
+	public void putAll(Map<? extends Object, ? extends Object> t) {
+		environmentProperties.get().putAll(t);
+	}
+
+	public void clear() {
+		environmentProperties.get().clear();
+	}
+
+	public Object clone() {
+		return environmentProperties.get().clone();
+	}
+
+	public String toString() {
+		return environmentProperties.get().toString();
+	}
+
+	public Set<java.util.Map.Entry<Object, Object>> entrySet() {
+		return environmentProperties.get().entrySet();
+	}
+
+	@SuppressWarnings("deprecation")
+	public void save(OutputStream out, String comments) {
+		environmentProperties.get().save(out, comments);
+	}
+
+	public boolean equals(Object o) {
+		return environmentProperties.get().equals(o);
+	}
+
+	public int hashCode() {
+		return environmentProperties.get().hashCode();
+	}
+
+	public Object getOrDefault(Object key, Object defaultValue) {
+		return environmentProperties.get().getOrDefault(key, defaultValue);
+	}
+
+	public void forEach(BiConsumer<? super Object, ? super Object> action) {
+		environmentProperties.get().forEach(action);
+	}
+
+	public void replaceAll(BiFunction<? super Object, ? super Object, ? extends Object> function) {
+		environmentProperties.get().replaceAll(function);
+	}
+
+	public Object putIfAbsent(Object key, Object value) {
+		return environmentProperties.get().putIfAbsent(key, value);
+	}
+
+	public boolean remove(Object key, Object value) {
+		return environmentProperties.get().remove(key, value);
+	}
+
+	public boolean replace(Object key, Object oldValue, Object newValue) {
+		return environmentProperties.get().replace(key, oldValue, newValue);
+	}
+
+	public void loadFromXML(InputStream in) throws IOException, InvalidPropertiesFormatException {
+		environmentProperties.get().loadFromXML(in);
+	}
+
+	public Object replace(Object key, Object value) {
+		return environmentProperties.get().replace(key, value);
+	}
+
+	public Object computeIfAbsent(Object key, Function<? super Object, ? extends Object> mappingFunction) {
+		return environmentProperties.get().computeIfAbsent(key, mappingFunction);
+	}
+
+	public Object computeIfPresent(Object key,
+			BiFunction<? super Object, ? super Object, ? extends Object> remappingFunction) {
+		return environmentProperties.get().computeIfPresent(key, remappingFunction);
+	}
+
+	public Object compute(Object key, BiFunction<? super Object, ? super Object, ? extends Object> remappingFunction) {
+		return environmentProperties.get().compute(key, remappingFunction);
+	}
+
+	public Object merge(Object key, Object value,
+			BiFunction<? super Object, ? super Object, ? extends Object> remappingFunction) {
+		return environmentProperties.get().merge(key, value, remappingFunction);
+	}
+
+	public String getProperty(String key) {
+		return environmentProperties.get().getProperty(key);
+	}
+
+	public Set<String> stringPropertyNames() {
+		return environmentProperties.get().stringPropertyNames();
+	}
+
+	public void list(PrintStream out) {
+		environmentProperties.get().list(out);
+	}
+
+	public void list(PrintWriter out) {
+		environmentProperties.get().list(out);
 	}
 
 }
